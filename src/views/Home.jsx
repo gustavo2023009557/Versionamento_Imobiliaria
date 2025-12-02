@@ -28,8 +28,9 @@ export default function Home() {
           <Link to="/imoveis/cadastrar">Cadastrar Imóvel</Link>
         </li>
         <li>
-          <Link to="/imoveis/editar">Editar Imóvel</Link>
+          <Link to={`/imoveis/listar`}>Ver Meus Imóveis</Link>
         </li>
+
       </ul>
 
       <button onClick={logout} style={{ marginTop: "20px" }}>
