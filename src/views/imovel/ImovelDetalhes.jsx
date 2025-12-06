@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getImovelById } from "../api";  // você deve criar essa função na API
+import { getImovelById } from "../../api";  // você deve criar essa função na API
 
 export default function ImovelDetalhes() {
   const { id } = useParams();
@@ -30,6 +30,7 @@ export default function ImovelDetalhes() {
       <p><strong>Área Total:</strong> {imovel.areaTotal} m²</p>
       <p><strong>Área Construída:</strong> {imovel.areaConstruida} m²</p>
       <p><strong>Endereço:</strong> {imovel.endereco}, Nº {imovel.numero}</p>
+      <p><strong>Bairro:</strong> Nº {imovel.bairro_id}</p>
       {imovel.complemento && <p><strong>Complemento:</strong> {imovel.complemento}</p>}
       <p><strong>CEP:</strong> {imovel.cep}</p>
       <p><strong>Características:</strong> {imovel.caracteristicas}</p>

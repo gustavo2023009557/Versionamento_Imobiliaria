@@ -21,16 +21,35 @@ export default function Home() {
       <h2>📌 Navegação</h2>
 
       <ul style={{ listStyle: "none", padding: 0 }}>
+
         <li>
           <Link to="/imoveis">Ver Imóveis</Link>
         </li>
+
         <li>
           <Link to="/imoveis/cadastrar">Cadastrar Imóvel</Link>
         </li>
+
         <li>
-          <Link to={`/imoveis/listar`}>Ver Meus Imóveis</Link>
+          <Link to="/imoveis/listar">Ver Meus Imóveis</Link>
         </li>
 
+        {/* 🔥 Opções apenas para ADMIN */}
+        {user.tipo === "admin" && (
+          <>
+            <hr />
+
+            <h3>⚙️ Administração</h3>
+
+            <li>
+              <Link to="/bairros/cadastrar">Cadastrar Bairro</Link>
+            </li>
+
+            <li>
+              <Link to="/bairros">Editar Bairro</Link>
+            </li>
+          </>
+        )}
       </ul>
 
       <button onClick={logout} style={{ marginTop: "20px" }}>

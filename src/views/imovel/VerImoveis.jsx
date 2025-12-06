@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getImoveis } from "../api";
+import { getImoveis } from "../../api";
 import { Link } from "react-router-dom";
 
 export default function VerImoveis() {

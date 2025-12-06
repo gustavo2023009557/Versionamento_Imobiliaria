@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getImovelById, deletarImovel } from "../api";
+import { getImovelById, deletarImovel } from "../../api";
 
 function DeletarImovelPage() {
   const location = useLocation();
@@ -23,14 +23,14 @@ function DeletarImovelPage() {
       // 2. Busca o imóvel no banco
       const imovel = await getImovelById(itemId);
       
-      if (!imovel || !imovel.idUsuario) {
+      if (!imovel || !imovel.usuario_id) {
         setMensagem('Erro: Imóvel não encontrado.');
         setIsLoading(false);
         return;
       }
 
       // 3. Verifica se o usuário logado é o dono do imóvel
-      if (imovel.idUsuario !== userId) {
+      if (imovel.usuario_id !== userId) {
         setMensagem('Erro: Você não tem permissão para excluir este imóvel.');
         setIsLoading(false);
         return;

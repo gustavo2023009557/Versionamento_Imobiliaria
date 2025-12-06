@@ -1,63 +1,85 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getImovelById, atualizarImovel } from "../api";
+// ✅ Importação da função para buscar todos os bairros
+import { getImovelById, atualizarImovel, getBairros } from "../../api";
 
 export default function EditarImovel() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState(null);
+  // 1. Novo estado para armazenar a lista de bairros
+  const [bairros, setBairros] = useState([]);
 
   useEffect(() => {
     async function carregar() {
-      const dados = await getImovelById(id);
+      // Busca os dados do imóvel e a lista de bairros em paralelo
+      const [dadosImovel, listaBairros] = await Promise.all([
+        getImovelById(id),
+        getBairros()
+      ]);
 
-      console.log(dados)
+      setBairros(listaBairros || []);
 
-      if (!dados) {
+      if (!dadosImovel) {
         alert("Imóvel não encontrado");
         navigate("/imoveis");
         return;
       }
 
-
-
       setForm({
-        id: dados.id,                   // necessário para o PUT da sua API
-        titulo: dados.titulo ?? "",
-        descricao: dados.descricao ?? "",
-        precoVenda: dados.precoVenda ?? "",
-        precoAluguel: dados.precoAluguel ?? "",
-        finalidade: dados.finalidade ?? "",
-        status: dados.status ?? "",
-        dormitorios: dados.dormitorios ?? "",
-        banheiros: dados.banheiros ?? "",
-        garagem: dados.garagem ?? "",
-        areaTotal: dados.areaTotal ?? "",
-        areaConstruida: dados.areaConstruida ?? "",
-        endereco: dados.endereco ?? "",
-        numero: dados.numero ?? "",
-        complemento: dados.complemento ?? "",
-        cep: dados.cep ?? "",
-        caracteristicas: dados.caracteristicas ?? "",
-        destaque: dados.destaque ?? false
+        id: dadosImovel.id,
+        titulo: dadosImovel.titulo ?? "",
+        descricao: dadosImovel.descricao ?? "",
+        precoVenda: dadosImovel.precoVenda ?? "",
+        precoAluguel: dadosImovel.precoAluguel ?? "",
+        finalidade: dadosImovel.finalidade ?? "",
+        status: dadosImovel.status ?? "",
+        dormitorios: dadosImovel.dormitorios ?? "",
+        banheiros: dadosImovel.banheiros ?? "",
+        garagem: dadosImovel.garagem ?? "",
+        areaTotal: dadosImovel.areaTotal ?? "",
+        areaConstruida: dadosImovel.areaConstruida ?? "",
+        endereco: dadosImovel.endereco ?? "",
+        numero: dadosImovel.numero ?? "",
+        complemento: dadosImovel.complemento ?? "",
+        cep: dadosImovel.cep ?? "",
+        caracteristicas: dadosImovel.caracteristicas ?? "",
+        destaque: dadosImovel.destaque ?? false,
+        // 2. Inicializa com o ID do Bairro atual do Imóvel
+        bairro_id: dadosImovel.bairro_id ?? ""
       });
     }
 
     carregar();
   }, [id, navigate]);
 
-  if (!form) return <p>Carregando...</p>;
+  // Exibe 'Carregando' até que o formulário e a lista de bairros estejam prontos
+  if (!form || bairros.length === 0) return <p>Carregando...</p>;
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
+
+    let newValue = value;
+
+    // 3. Garante que IDs e campos numéricos sejam convertidos para Int
+    if (type === "number" || name === "bairro_id" || name === "dormitorios" || name === "banheiros" || name === "garagem") {
+      newValue = value === "" ? "" : parseInt(value);
+    }
+
     setForm({
       ...form,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : newValue,
     });
   }
 
   async function salvar() {
+    // Verificação se um Bairro foi selecionado
+    if (!form.bairro_id) {
+      alert("Por favor, selecione um Bairro.");
+      return;
+    }
+
     const response = await atualizarImovel(form);
 
     if (response.ok) {
@@ -73,6 +95,25 @@ export default function EditarImovel() {
       <h1>Editar Imóvel #{id}</h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px" }}>
+
+        {/* 4. Campo de Seleção de Bairro */}
+        <label htmlFor="bairro_id">Selecione o Bairro:</label>
+        <select
+          id="bairro_id"
+          name="bairro_id"
+          // O valor deve ser o ID do bairro associado ao Imóvel (dadosImovel.bairro_id)
+          value={form.bairro_id || ""}
+          onChange={handleChange}
+          required
+        >
+          <option value="" disabled>Escolha um bairro</option>
+          {bairros.map((bairro) => (
+            <option key={bairro.id} value={bairro.id}>
+              {bairro.nome} ({bairro.cidade}/{bairro.estado})
+            </option>
+          ))}
+        </select>
+        <hr style={{ width: '100%' }} />
 
         <label>Título:</label>
         <input name="titulo" value={form.titulo} onChange={handleChange} />

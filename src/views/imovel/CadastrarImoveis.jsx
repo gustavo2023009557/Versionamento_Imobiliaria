@@ -1,8 +1,34 @@
-import React, { useState } from "react";
-import { cadastrarImovel } from "../api";
+import React, { useState, useEffect } from "react"; // ✅ Adicionado useEffect
+import { cadastrarImovel, getBairros } from "../../api"; // ✅ Importado getBairros
 import { useNavigate } from "react-router-dom";
 
+const getUserId = () => {
+  const userString = localStorage.getItem("user");
+  if (!userString) {
+    return null;
+  }
+
+  try {
+    const user = JSON.parse(userString);
+    const userId = parseInt(user.id);
+    if (isNaN(userId)) {
+      console.error("ID do usuário no localStorage não é um número válido.");
+      return null;
+    }
+    return userId;
+  } catch (error) {
+    console.error("Erro ao fazer parse do usuário do localStorage:", error);
+    return null;
+  }
+};
+
+
 export default function CadastrarImoveis() {
+  const navigate = useNavigate();
+
+  // 1. ✅ NOVO ESTADO: Lista de bairros
+  const [bairros, setBairros] = useState([]);
+
   const [form, setForm] = useState({
     titulo: "",
     descricao: "",
@@ -21,20 +47,54 @@ export default function CadastrarImoveis() {
     cep: "",
     caracteristicas: "",
     destaque: false,
+    // 2. ✅ NOVO CAMPO: ID do Bairro
+    bairro_id: "",
+    usuario_id: getUserId(),
   });
 
-  const navigate = useNavigate();
+  // 3. ✅ CARREGAMENTO: Carrega a lista de bairros na montagem do componente
+  useEffect(() => {
+    async function carregarBairros() {
+      try {
+        const listaBairros = await getBairros();
+        setBairros(listaBairros);
+
+        // Opcional: Pré-selecionar o primeiro bairro se a lista não estiver vazia
+        if (listaBairros.length > 0) {
+          setForm(prevForm => ({
+            ...prevForm,
+            bairro_id: listaBairros[0].id // Seleciona o ID do primeiro bairro
+          }));
+        }
+
+      } catch (error) {
+        console.error("Erro ao carregar bairros:", error);
+      }
+    }
+    carregarBairros();
+  }, []);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
+    // O valor do select deve ser convertido para inteiro, já que ele representa um ID.
+    const newValue = (name === "bairro_id" || name === "dormitorios" || name === "banheiros" || name === "garagem")
+      ? parseInt(value)
+      : value;
+
     setForm({
       ...form,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : newValue,
     });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    // Verificação básica
+    if (!form.bairro_id) {
+      alert("Por favor, selecione um Bairro.");
+      return;
+    }
 
     const response = await cadastrarImovel(form);
 
@@ -55,10 +115,33 @@ export default function CadastrarImoveis() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "10px", // espaçamento entre os campos
+          gap: "10px",
           maxWidth: "400px",
         }}
       >
+        {/* 4. ✅ CAMPO DE SELEÇÃO DE BAIRRO */}
+        <label htmlFor="bairro_id">Selecione o Bairro:</label>
+        <select
+          id="bairro_id"
+          name="bairro_id"
+          value={form.bairro_id || ""} // Use || "" para evitar aviso de componente não controlado
+          onChange={handleChange}
+          required
+        >
+          <option value="" disabled>Escolha um bairro</option>
+          {bairros.length > 0 ? (
+            bairros.map((bairro) => (
+              <option key={bairro.id} value={bairro.id}>
+                {bairro.nome} ({bairro.cidade}/{bairro.estado})
+              </option>
+            ))
+          ) : (
+            <option value="" disabled>Carregando bairros...</option>
+          )}
+        </select>
+
+        <hr style={{ width: '100%' }} />
+
         <input name="titulo" placeholder="Título" value={form.titulo} onChange={handleChange} />
         <input name="descricao" placeholder="Descrição" value={form.descricao} onChange={handleChange} />
 

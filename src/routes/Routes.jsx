@@ -4,14 +4,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../views/Login";
 import Home from "../views/Home";
 import PrivateRoute from "../components/PrivateRoute";
+import AdminRoute from "../components/AdminRoute";
 
-import VerImoveis from "../views/VerImoveis";
-import VerMeusImoveis from "../views/VerMeusImoveis";
-import ImovelDetalhes from "../views/ImovelDetalhes";
-import CadastrarImoveis from "../views/CadastrarImoveis";
-import EditarImoveis from "../views/EditarImoveis";
-import ListarImoveis from "../views/ListarImoveis";
-import DeletarImovel from "../views/DeletarImovel";
+import VerImoveis from "../views/imovel/VerImoveis";
+import VerMeusImoveis from "../views/imovel/VerMeusImoveis";
+import ImovelDetalhes from "../views/imovel/ImovelDetalhes";
+import CadastrarImoveis from "../views/imovel/CadastrarImoveis";
+import EditarImoveis from "../views/imovel/EditarImoveis";
+import ListarImoveis from "../views/imovel/ListarImoveis";
+import DeletarImovel from "../views/imovel/DeletarImovel";
+import VerBairros from "../views/bairro/VerBairros";
+import CadastrarBairro from "../views/bairro/CadastrarBairro";
+import EditarBairro from "../views/bairro/EditarBairro";
+import DeletarBairro from "../views/bairro/DeletarBairro";
 
 export default function AppRoutes() {
   return (
@@ -40,7 +45,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/imoveis/meus_imoveis"
           element={
@@ -75,6 +80,59 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/bairros"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <VerBairros />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/bairros/cadastrar"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <CadastrarBairro />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/bairros/editar/:id"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <EditarBairro />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/bairros/deletar"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <DeletarBairro />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );

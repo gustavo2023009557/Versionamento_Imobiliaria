@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getImovelByUserId } from "../api";
+import { getImovelByUserId } from "../../api";
 import { Link } from "react-router-dom";
 
 export default function VerMeusImoveis() {
