@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 // ✅ Importação da função para buscar todos os bairros
-import { getImovelById, atualizarImovel, getBairros } from "../../api";
+import { getImovelById, atualizarImovel, getBairros, getTipoImovel } from "../../api";
 
 export default function EditarImovel() {
   const { id } = useParams();

@@ -34,7 +34,7 @@ export default function Home() {
           <Link to="/imoveis/listar">Ver Meus Imóveis</Link>
         </li>
 
-        {/* 🔥 Opções apenas para ADMIN */}
+        {/* Opções apenas para ADMIN */}
         {user.tipo === "admin" && (
           <>
             <hr />
@@ -47,6 +47,12 @@ export default function Home() {
 
             <li>
               <Link to="/bairros">Editar Bairro</Link>
+            </li>
+            <li>
+              <Link to="/tiposimoveis/cadastrar">Cadastrar Tipo de Imóvel</Link>
+            </li>
+            <li>
+              <Link to="/tiposimoveis">Editar Tipo de Imóvel</Link>
             </li>
           </>
         )}

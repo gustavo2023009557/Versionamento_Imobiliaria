@@ -17,6 +17,10 @@ import VerBairros from "../views/bairro/VerBairros";
 import CadastrarBairro from "../views/bairro/CadastrarBairro";
 import EditarBairro from "../views/bairro/EditarBairro";
 import DeletarBairro from "../views/bairro/DeletarBairro";
+import VerTiposImoveis from "../views/tipoImovel/VerTiposImoveis";
+import CadastrarTiposImoveis from "../views/tipoImovel/CadastrarTiposImoveis";
+import EditarTiposImoveis from "../views/tipoImovel/EditarTiposImoveis";
+import DeletarTiposImoveis from "../views/tipoImovel/DeletarTiposImoveis";
 
 export default function AppRoutes() {
   return (
@@ -132,6 +136,59 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/tiposimoveis"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <VerTiposImoveis />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tiposimoveis/cadastrar"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <CadastrarTiposImoveis />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tiposimoveis/editar/:id"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <EditarTiposImoveis />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tiposimoveis/deletar"
+          element={
+
+            <PrivateRoute>
+              <AdminRoute>
+
+                <DeletarTiposImoveis />
+
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+        
 
       </Routes>
     </BrowserRouter>

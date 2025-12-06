@@ -127,11 +127,50 @@ export async function deletarBairro(id) {
 //
 //TIPOIMOVELCONTROLLER
 //
+//Pegar todos os tipo de imovel
+export async function getTipoImovel() {
+  const response = await fetch("http://localhost:8080/tiposimoveis");
+  return await response.json();
+}
 
+//cadastrar um tipo de imovel no sistema
+export async function cadastrarTipoImovel(tipoImovel) {
+  return fetch("http://localhost:8080/tiposimoveis", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tipoImovel),
+  });
+}
 
+//Pegar um tipo de imovel por seu id
+export async function getTipoImovelById(id) {
+  const response = await fetch(`http://localhost:8080/tiposimoveis/${id}`);
+  return response.json();
+}
+
+//Atualizar um tipo de imovel
+export async function atualizarTipoImovel(tipoImovel) {
+  return fetch(`http://localhost:8080/tiposimoveis/${tipoImovel.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tipoImovel),
+  });
+}
+
+//Deletar um tipo de imovel
+export async function deletarTipoImovel(id) {
+  return fetch(`http://localhost:8080/tiposimoveis/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
 
 //
 //FOTOIMOVELCONTROLLER
 //
-
-
