@@ -10,7 +10,7 @@ export async function getUsers() {
 
 //get users by id
 export async function getUserById(id) {
-  const response = await fetch("http://localhost:8080/users/"+id);
+  const response = await fetch("http://localhost:8080/users/" + id);
   return await response.json();
 }
 
@@ -174,3 +174,78 @@ export async function deletarTipoImovel(id) {
 //
 //FOTOIMOVELCONTROLLER
 //
+
+// Listar todas as fotos de um imóvel pelo ID do imóvel
+// GET /fotos/imovel/{id}
+export async function getFotosByImovelId(imovelId) {
+  const response = await fetch(`http://localhost:8080/fotos/imovel/${imovelId}`);
+  return await response.json();
+}
+
+// Buscar a foto marcada como CAPA de um imóvel pelo ID do imóvel
+// GET /fotos/capa/{id}
+export async function getCapaByImovelId(imovelId) {
+  const response = await fetch(`http://localhost:8080/fotos/capa/${imovelId}`);
+
+  // Retorna null ou um objeto de erro se não for encontrado (404)
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar a foto capa: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+// Cadastrar uma nova foto (Upload de arquivo + metadados JSON)
+// POST /fotos (Consumes: multipart/form-data)
+/**
+ * @param {File} arquivo - O arquivo de imagem (objeto File).
+ * @param {object} dados - Objeto JSON contendo os metadados (FotoImovelDTO, ex: {imovelId: 1, capa: false, ordem: 1}).
+ * @returns {Promise<Response>}
+ */
+export async function cadastrarFotoImovel(arquivo, dados) {
+  const formData = new FormData();
+
+  // Adiciona o arquivo
+  formData.append("arquivo", arquivo);
+
+  // Adiciona os metadados (converte o objeto JSON em uma string JSON)
+  formData.append("dados", JSON.stringify(dados));
+
+  // Nota: Não defina o cabeçalho 'Content-Type' manualmente para 'multipart/form-data'. 
+  // O navegador se encarrega de configurá-lo corretamente, incluindo o boundary necessário,
+  // quando um objeto FormData é passado no corpo (body).
+
+  return fetch("http://localhost:8080/fotos", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+// DELETE /fotos/{id}
+export async function deletarFotoImovel(id) {
+    const response = await fetch(`http://localhost:8080/fotos/${id}`, {
+        method: "DELETE",
+    });
+    // O backend retorna 204 No Content para sucesso
+    if (!response.ok) {
+        throw new Error(`Falha ao deletar a foto: ${response.statusText}`);
+    }
+    return true;
+}
+
+export async function setFotoCapa(fotoId, imovelId) {
+    const response = await fetch(`http://localhost:8080/fotos/${fotoId}/capa/${imovelId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Falha ao definir foto ${fotoId} como capa para o imóvel ${imovelId}.`);
+    }
+    return response.json(); // Retorna a foto que se tornou capa
+}
+

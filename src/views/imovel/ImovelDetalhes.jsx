@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
-// 1. IMPORTAÇÃO: Adicionado useNavigate
 import { useParams, useNavigate } from "react-router-dom"; 
-// As funções de API já estão importadas:
-import { getImovelById, getBairroById, getTipoImovelById } from "../../api";
+// NOVAS IMPORTAÇÕES para Fotos
+import { 
+    getImovelById, 
+    getBairroById, 
+    getTipoImovelById,
+    getFotosByImovelId, // Listar todas as fotos
+    getCapaByImovelId // Buscar foto capa
+} from "../../api";
+
+// Constante para a base da URL das imagens (Deve ser a mesma do seu frontend e backend)
+const IMAGE_BASE_URL = "http://localhost:8080/fotos/imagem/";
 
 // --- ESTILOS CSS PARA DETALHES ---
 const styles = {
+    // ... (Estilos existentes) ...
     pageContainer: {
         padding: "30px",
-        backgroundColor: "#f4f7f9", // Fundo suave
+        backgroundColor: "#f4f7f9",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -23,7 +32,7 @@ const styles = {
         marginTop: "30px",
     },
     mainTitle: {
-        color: "#0000FF", // Azul forte
+        color: "#0000FF",
         borderBottom: "3px solid #007bff",
         paddingBottom: "10px",
         marginBottom: "25px",
@@ -66,10 +75,9 @@ const styles = {
         border: "1px solid #ced4da",
         lineHeight: "1.6",
     },
-    // NOVO ESTILO: Botão Voltar
     backButton: {
         padding: "10px 15px",
-        backgroundColor: "#6c757d", // Cor cinza/secundária
+        backgroundColor: "#6c757d",
         color: "white",
         border: "none",
         borderRadius: "5px",
@@ -77,27 +85,89 @@ const styles = {
         fontSize: "1em",
         marginBottom: '20px',
         transition: 'background-color 0.3s',
+    },
+    
+    // --- NOVOS ESTILOS PARA FOTOS ---
+    capaImage: {
+        width: '100%',
+        maxHeight: '450px',
+        objectFit: 'cover',
+        borderRadius: '8px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        cursor: 'zoom-in', // Indica que a imagem é a principal/interativa
+    },
+    galleryGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: '15px',
+        marginTop: '20px',
+    },
+    thumbnailContainer: {
+        width: '100%',
+        height: '100px', // Define a altura para forçar o quadrado (com object-fit cover na img)
+        overflow: 'hidden',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        border: '2px solid #ccc',
+        transition: 'border-color 0.3s, transform 0.1s',
+        '&:hover': {
+            transform: 'scale(1.02)'
+        }
+    },
+    thumbnail: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
     }
 };
 
 export default function ImovelDetalhes() {
     const { id } = useParams();
-    // 2. NAVEGAÇÃO: Inicializando useNavigate
     const navigate = useNavigate();
     
     const [imovel, setImovel] = useState(null);
     const [bairroDetalhes, setBairroDetalhes] = useState(null);
     const [tipoImovelDetalhes, setTipoImovelDetalhes] = useState(null);
+    
+    // NOVO ESTADO: Armazena a URL da imagem atualmente exibida em destaque
+    const [selectedImageUrl, setSelectedImageUrl] = useState(null);
+    const [fotos, setFotos] = useState([]);
 
     useEffect(() => {
         async function carregar() {
             try {
-                // ... (lógica de carregamento da API omitida por concisão, mas mantida no código)
-                const imovelResponse = await getImovelById(id);
+                const imovelId = parseInt(id);
+
+                // 1. Carregar detalhes do Imóvel
+                const imovelResponse = await getImovelById(imovelId);
                 setImovel(imovelResponse);
 
                 if (imovelResponse) {
                     await Promise.all([
+                        // 2. Carregar Capa e Galeria
+                        (async () => {
+                            const capaResponse = await getCapaByImovelId(imovelId);
+                            const fotosResponse = await getFotosByImovelId(imovelId);
+
+                            // Processa fotos
+                            fotosResponse.sort((a, b) => {
+                                if (a.capa && !b.capa) return -1;
+                                if (!a.capa && b.capa) return 1;
+                                return (a.ordem || 0) - (b.ordem || 0);
+                            });
+                            setFotos(fotosResponse || []);
+
+                            // Define a Capa como a primeira imagem selecionada para destaque
+                            if (capaResponse) {
+                                setSelectedImageUrl(`${IMAGE_BASE_URL}${capaResponse.nomeArquivo}`);
+                            } else if (fotosResponse.length > 0) {
+                                // Se não houver capa definida, usa a primeira foto
+                                setSelectedImageUrl(`${IMAGE_BASE_URL}${fotosResponse[0].nomeArquivo}`);
+                            }
+                        })(),
+
+                        // 3. Carregar Bairro e Tipo
                         (async () => {
                             if (imovelResponse.bairro_id) {
                                 const bairroResponse = await getBairroById(imovelResponse.bairro_id);
@@ -114,14 +184,22 @@ export default function ImovelDetalhes() {
                 }
             } catch (error) {
                 console.error("Erro ao carregar detalhes:", error);
+                // Lidar com erros de carregamento aqui, se necessário
             }
         }
         carregar();
     }, [id]);
 
-    // 3. FUNÇÃO DE CLIQUE: Navega para a rota /imoveis
     const handleBackClick = () => {
         navigate("/imoveis");
+    };
+
+    /**
+     * Função que define qual imagem será exibida na área de destaque principal
+     * @param {string} nomeArquivo O nome do arquivo da foto clicada.
+     */
+    const handleThumbnailClick = (nomeArquivo) => {
+        setSelectedImageUrl(`${IMAGE_BASE_URL}${nomeArquivo}`);
     };
 
     if (!imovel) return <p style={{...styles.pageContainer, alignItems: 'center'}}>Carregando detalhes do Imóvel...</p>;
@@ -132,12 +210,14 @@ export default function ImovelDetalhes() {
             <span style={styles.value}>{value}</span>
         </div>
     );
+    
+    // URL da imagem padrão caso nenhuma capa/foto seja encontrada ou haja erro
+    const defaultImageUrl = "https://via.placeholder.com/900x450?text=Sem+Foto+Disponível";
 
     return (
         <div style={styles.pageContainer}>
             <div style={styles.detailCard}>
 
-                {/* 4. BOTÃO VOLTAR ADICIONADO AQUI */}
                 <button 
                     style={styles.backButton} 
                     onClick={handleBackClick}
@@ -148,13 +228,60 @@ export default function ImovelDetalhes() {
 
                 <h1 style={styles.mainTitle}>Detalhes do Imóvel - **{imovel.titulo}**</h1>
                 
-                {/* O restante do JSX foi omitido por concisão, mas permanece o mesmo */}
+                {/* SEÇÃO DE IMAGEM EM DESTAQUE (Agora dinâmica) */}
+                <h2 style={{...styles.sectionTitle, marginTop: '0'}}>🖼️ Imagem em Destaque</h2>
+                <img 
+                    // Usa a URL da imagem selecionada (ou a padrão)
+                    src={selectedImageUrl || defaultImageUrl} 
+                    alt={`Imagem em Destaque do Imóvel ${imovel.titulo}`} 
+                    style={styles.capaImage} 
+                    // Garante que se o arquivo não carregar, exibe o placeholder
+                    onError={(e) => { e.target.onerror = null; e.target.src = defaultImageUrl; }}
+                />
+
+                {/* --- RESTANTE DOS DETALHES --- */}
                 
                 <h2 style={styles.sectionTitle}>ℹ️ Descrição Detalhada</h2>
                 <div style={{ marginBottom: "30px" }}>
                     <p style={styles.descriptionBox}>{imovel.descricao}</p>
                 </div>
+                
+                {/* ... (Outras seções de detalhes do seu código) ... */}
 
+                <h2 style={styles.sectionTitle}>📸 Galeria de Fotos ({fotos.length} Imagens)</h2>
+                {fotos.length > 0 ? (
+                    <div style={styles.galleryGrid}>
+                        {fotos.map(foto => {
+                            const currentFotoUrl = `${IMAGE_BASE_URL}${foto.nomeArquivo}`;
+                            const isSelected = selectedImageUrl === currentFotoUrl;
+
+                            return (
+                                <div 
+                                    key={foto.id}
+                                    style={{
+                                        ...styles.thumbnailContainer,
+                                        // Destaque para a imagem que está sendo exibida no destaque principal
+                                        border: isSelected ? '2px solid #007bff' : '2px solid #ccc'
+                                    }}
+                                    onClick={() => handleThumbnailClick(foto.nomeArquivo)} // Ação de clique
+                                    title={foto.capa ? "Foto de Capa" : `Ordem: ${foto.ordem}`}
+                                >
+                                    <img 
+                                        src={currentFotoUrl} 
+                                        alt={`Foto ${foto.ordem || foto.id}`} 
+                                        style={styles.thumbnail}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/150?text=Erro+Foto"; }}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p>Nenhuma foto cadastrada para este imóvel.</p>
+                )}
+
+                {/* --- CONTINUAÇÃO DOS DETALHES (omiti para brevidade) --- */}
+                
                 <h2 style={styles.sectionTitle}>📍 Tipo e Localização</h2>
                 <div style={styles.infoGrid}>
                     {tipoImovelDetalhes ? (
@@ -202,7 +329,7 @@ export default function ImovelDetalhes() {
 
                 <h2 style={styles.sectionTitle}>✨ Outros Detalhes</h2>
                 <p style={styles.descriptionBox}>{imovel.caracteristicas || "Nenhuma característica adicional informada."}</p>
-
+                
             </div>
         </div>
     );
