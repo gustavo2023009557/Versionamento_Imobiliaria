@@ -26,7 +26,7 @@ import org.springframework.core.io.UrlResource; // Necessário para servir arqui
 
 import com.example.demo.UserDTO.FotoImovelDTO;
 import com.example.demo.models.FotoImovelModel;
-import com.example.demo.services.FotoImovelService; 
+import com.example.demo.services.FotoImovelService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
@@ -41,8 +41,7 @@ public class FotoImovelController {
     private FotoImovelService service;
 
     // ATENÇÃO: Use o mesmo caminho de destino para salvar e para buscar
-    private static final String IMAGE_DIRECTORY = "C:\\Users\\gugra\\Desktop\\Aula 22 09 2025\\demo\\src\\fotos";
-
+    private static final String IMAGE_DIRECTORY = "fotos/";
 
     // 1. GET: Listar todas as fotos de um imóvel
     // GET /fotos/imovel/{id}
@@ -63,9 +62,9 @@ public class FotoImovelController {
     public String salvar(
             @RequestPart("arquivo") MultipartFile arquivo,
             @RequestPart("dados") String dados) throws Exception {
-        
+
         FotoImovelDTO dto = objectMapper.readValue(dados, FotoImovelDTO.class);
-        
+
         // --- CORREÇÃO: Garante que o diretório de destino exista ---
         Path diretorioDestino = Paths.get(IMAGE_DIRECTORY);
         try {
@@ -73,7 +72,7 @@ public class FotoImovelController {
         } catch (IOException e) {
             throw new RuntimeException("Falha ao criar diretório de destino: " + e.getMessage());
         }
-        
+
         String nomeArquivo = System.currentTimeMillis() + "_" + arquivo.getOriginalFilename();
         Path caminhoArquivo = Paths.get(IMAGE_DIRECTORY, nomeArquivo);
 
@@ -90,7 +89,7 @@ public class FotoImovelController {
         model.setCaminho(caminhoArquivo.toAbsolutePath().toString());
 
         // Salva o registro no banco de dados
-        service.insert(model); 
+        service.insert(model);
 
         return "Foto cadastrada com sucesso! Nome do arquivo: " + nomeArquivo;
     }
@@ -100,8 +99,8 @@ public class FotoImovelController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFoto(@PathVariable Integer id) {
         // Assume-se que o Service cuida da exclusão do DB e do arquivo físico
-        service.delete(id); 
-        return ResponseEntity.noContent().build(); 
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     // 5. PATCH: Definir foto como capa
@@ -114,26 +113,26 @@ public class FotoImovelController {
         }
         return ResponseEntity.notFound().build();
     }
-    
+
     // 6. GET: Servir o arquivo de imagem
     // GET /fotos/imagem/{nomeArquivo}
     // Este endpoint resolve o problema das imagens não aparecerem no frontend.
     @GetMapping("/imagem/{nomeArquivo}")
     public ResponseEntity<Resource> getImagem(@PathVariable String nomeArquivo) {
-        
+
         Path arquivo = Paths.get(IMAGE_DIRECTORY).resolve(nomeArquivo);
-        
+
         try {
             Resource resource = new UrlResource(arquivo.toUri());
 
             if (resource.exists() || resource.isReadable()) {
-                
+
                 // Determina o tipo de conteúdo (MIME Type)
                 String contentType = Files.probeContentType(arquivo);
                 if (contentType == null) {
-                    contentType = "application/octet-stream"; 
+                    contentType = "application/octet-stream";
                 }
-                
+
                 // Retorna o arquivo com o cabeçalho HTTP correto
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_TYPE, contentType)

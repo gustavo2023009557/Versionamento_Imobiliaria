@@ -17,7 +17,7 @@ public interface FotoImovelRepository extends JpaRepository<FotoImovelModel, Int
 
     // Pesquisa a foto capa (já deve existir)
     FotoImovelModel findByImovelIdAndCapaTrue(Integer imovelId);
-
+    
     @Modifying
     @Transactional
     @Query("UPDATE FotoImovelModel f SET f.capa = FALSE WHERE f.imovelId = :imovelId")

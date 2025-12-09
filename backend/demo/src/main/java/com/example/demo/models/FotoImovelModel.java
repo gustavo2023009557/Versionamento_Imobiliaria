@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.example.demo.UserDTO.FotoImovelDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Importar
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,24 +15,26 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name="fotos_imoveis")
+@Table(name = "fotos_imoveis")
 @Getter
 @Setter
-// NOVO: Ignora campos internos do Hibernate para evitar LazyInitializationException
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
+// NOVO: Ignora campos internos do Hibernate para evitar
+// LazyInitializationException
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class FotoImovelModel implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
 
+    @Column(name = "imovel_id")
     private Integer imovelId;
 
     private String nomeArquivo;
-    
+
     private String caminho;
-    
+
     private Boolean capa;
 
     private Integer ordem;
@@ -40,7 +43,7 @@ public class FotoImovelModel implements Serializable {
     public FotoImovelModel() {
     }
 
-    public FotoImovelModel(FotoImovelDTO dto){
+    public FotoImovelModel(FotoImovelDTO dto) {
         this.id = dto.getId();
         this.imovelId = dto.getImovelId();
         this.nomeArquivo = dto.getNomeArquivo();
